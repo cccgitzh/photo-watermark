@@ -1,0 +1,226 @@
+/* ==========================================================================
+   base.css — 设计令牌、重置、排版、主题
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* 色板 */
+  --bg: #f6f7f9;
+  --bg-grad: radial-gradient(1200px 600px at 12% -10%, #eef2ff 0%, transparent 60%),
+             radial-gradient(900px 500px at 105% 0%, #f0fdfa 0%, transparent 55%);
+  --surface: #ffffff;
+  --surface-2: #f4f6f8;
+  --surface-3: #eceff3;
+  --border: #e2e6ec;
+  --border-strong: #cfd5de;
+  --text: #14181f;
+  --text-2: #5c6675;
+  --text-3: #8b95a5;
+  --accent: #3b5bfd;
+  --accent-strong: #2f4ce0;
+  --accent-soft: rgba(59, 91, 253, 0.1);
+  --accent-ring: rgba(59, 91, 253, 0.28);
+  --danger: #dc2626;
+  --danger-strong: #b91c1c;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --success: #0f9d58;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 24px 60px -24px rgba(16, 24, 40, 0.3);
+  --checker-a: #f0f2f5;
+  --checker-b: #e4e8ed;
+
+  /* 排版与形状 */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --r-sm: 8px;
+  --r-md: 11px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur: 180ms;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0e1014;
+  --bg-grad: radial-gradient(1100px 560px at 10% -12%, rgba(59, 91, 253, 0.16) 0%, transparent 60%),
+             radial-gradient(900px 480px at 108% -4%, rgba(13, 148, 136, 0.12) 0%, transparent 55%);
+  --surface: #161a21;
+  --surface-2: #1c212a;
+  --surface-3: #242a35;
+  --border: #262d38;
+  --border-strong: #35404e;
+  --text: #e9ecf2;
+  --text-2: #a3adbd;
+  --text-3: #75808f;
+  --accent: #6b86ff;
+  --accent-strong: #8398ff;
+  --accent-soft: rgba(107, 134, 255, 0.16);
+  --accent-ring: rgba(107, 134, 255, 0.38);
+  --danger: #f0584f;
+  --danger-strong: #ff7a72;
+  --danger-soft: rgba(240, 88, 79, 0.16);
+  --success: #34c98a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 28px -14px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.85);
+  --checker-a: #1b2028;
+  --checker-b: #232935;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: var(--bg-grad);
+  background-repeat: no-repeat;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 13px;
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+input,
+select,
+output {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 5px;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface-3);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 滚动条（仅桌面精细指针） */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-3);
+    background-clip: content-box;
+  }
+}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" data-theme-mode="system">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="description" content="在浏览器本地给图片添加文字水印，图片不会上传、不会联网，适合身份证、护照等敏感图片。">
+  <meta name="theme-color" content="#f7f8fa" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+  <title>图片水印 · 纯本地处理</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <script src="js/theme-init.js"></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2.5"></rect>
+            <path d="M7 15.5 10.5 12l2.6 2.6L16 11.5l3 3"></path>
+            <circle cx="8.6" cy="8.6" r="1.3"></circle>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>图片水印</strong>
+          <small>本地处理 · 不上传</small>
+        </span>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="切换深色模式" title="切换深色模式">
+          <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4"></path>
+          </svg>
+          <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="helpToggle" type="button" aria-label="使用说明" aria-expanded="false"
+                title="使用说明">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M9.6 9.2a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.2 1-1.2 1.8v.4"></path>
+            <path d="M12 17.2h.01"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="help-pop" id="helpPop" hidden>
+      <div class="help-grid">
+        <div>
+          <h3>快捷键</h3>
+          <ul>
+            <li><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>V</kbd><span>粘贴图片或文字</span></li>
+            <li><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>D</kbd><span>下载全部</span></li>
+            <li><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Z</kbd><span>撤销上一步删除</span></li>
+            <li><kbd>←</kbd> <kbd>→</kbd><span>预览时切换图片</span></li>
+            <li><kbd>Esc</kbd><span>关闭预览</span></li>
+            <li><kbd>1</kbd>–<kbd>9</kbd><span>快速调整字号</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>隐私说明</h3>
+          <p>所有解码、绘制、压缩都在本机浏览器内完成，页面不发起任何网络请求，也不会写入任何服务端。</p>
+          <p>关闭页面后，图片与设置即从内存中释放（主题与参数偏好仅保存在本机浏览器存储中）。</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="panel" aria-label="水印设置">
+      <section class="block">
+        <div class="block-head">
+          <h2>添加图片</h2>
+          <span class="hint" id="fileHint">可多选</span>
+        </div>
+        <label class="dropzone" id="dropzone">
+          <input class="visually-hidden" id="fileInput" type="file" multiple
+                 accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/x-icon,image/vnd.microsoft.icon,.jpg,.jpeg,.png,.gif,.webp,.bmp,.ico">
+          <span class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 16V4"></path>
+              <path d="m7 9 5-5 5 5"></path>
+              <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path>
+            </svg>
+          </span>
+          <span class="dropzone-title">点击选择，或拖拽图片到这里</span>
+          <span class="dropzone-sub">支持 JPG / PNG / GIF / WebP / BMP / ICO，也可直接粘贴</span>
+        </label>
+
+        <div class="queue" id="queue" hidden>
+          <div class="queue-row">
+            <span class="queue-text" id="queueText">准备中…</span>
+            <button class="link-btn" id="queueCancel" type="button">取消</button>
+          </div>
+          <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+               id="queueProgress">
+            <i id="queueInner"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>水印文字</h2>
+          <span class="hint"><span id="textCount">0</span>/100</span>
+        </div>
+        <input class="input" id="text" type="text" maxlength="100" value="版权所有 侵权必究"
+               placeholder="输入水印文字" spellcheck="false" autocomplete="off">
+        <div class="chips" id="textPresets">
+          <button class="chip" type="button" data-text="仅供办理XX使用，他用无效">办事</button>
+          <button class="chip" type="button" data-text="仅用于XX认证，他用无效">认证</button>
+          <button class="chip" type="button" data-text="复印件与原件相符">复印核验</button>
+          <button class="chip" type="button" data-text="该证件仅供XX查看，不得他用">证件</button>
+          <button class="chip" type="button" data-text="内部资料，请勿外传">内部资料</button>
+          <button class="chip" type="button" data-text="版权所有，严禁外传">版权</button>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>布局</h2>
+        </div>
+        <div class="segmented" id="patternSeg" role="radiogroup" aria-label="水印布局方式">
+          <button class="seg" type="button" role="radio" aria-checked="true" data-pattern="tile">平铺</button>
+          <button class="seg" type="button" role="radio" aria-checked="false" data-pattern="single">单个</button>
+          <button class="seg" type="button" role="radio" aria-checked="false" data-pattern="custom">自定义</button>
+        </div>
+
+        <div class="field" id="countField" hidden>
+          <div class="field-row">
+            <label for="count">水印数量</label>
+            <input class="input input-number" id="count" type="number" min="1" max="100" step="1" value="1"
+                   inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field" id="positionField" hidden>
+          <div class="field-row">
+            <span class="field-label">位置</span>
+            <div class="pos-grid" id="positionGrid" role="radiogroup" aria-label="水印位置">
+              <button class="pos" type="button" role="radio" aria-checked="false" aria-label="左上角"
+                      title="左上角" data-position="top-left"></button>
+              <button class="pos" type="button" role="radio" aria-checked="false" aria-label="右上角"
+                      title="右上角" data-position="top-right"></button>
+              <button class="pos" type="button" role="radio" aria-checked="true" aria-label="居中"
+                      title="居中" data-position="center"></button>
+              <button class="pos" type="button" role="radio" aria-checked="false" aria-label="左下角"
+                      title="左下角" data-position="bottom-left"></button>
+              <button class="pos" type="button" role="radio" aria-checked="false" aria-label="右下角"
+                      title="右下角" data-position="bottom-right"></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <h2>样式</h2>
+        </div>
+
+        <div class="field-row">
+          <label for="fontFamily">字体</label>
+          <div class="row-inline">
+            <select class="input select" id="fontFamily">
+              <option value="黑体">黑体</option>
+              <option value="宋体">宋体</option>
+              <option value="仿宋">仿宋</option>
+              <option value="楷体">楷体</option>
+              <option value="隶书">隶书</option>
+              <option value="幼圆">幼圆</option>
+              <option value="Arial">Arial</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Georgia">Georgia</option>
+              <option value="TimesNewRoman">Times New Roman</option>
+            </select>
+            <div class="toggle-group" role="group" aria-label="字体样式">
+              <button class="toggle toggle-bold" id="boldToggle" type="button" aria-pressed="false"
+                      title="加粗">B</button>
+              <button class="toggle toggle-italic" id="italicToggle" type="button" aria-pressed="false"
+                      title="斜体">I</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label for="color">颜色</label>
+          <div class="row-inline">
+            <div class="swatches" id="colorSwatches">
+              <button class="swatch" type="button" data-color="#ffffff" aria-label="白色"></button>
+              <button class="swatch" type="button" data-color="#111111" aria-label="黑色"></button>
+              <button class="swatch" type="button" data-color="#e11d48" aria-label="红色"></button>
+              <button class="swatch" type="button" data-color="#2563eb" aria-label="蓝色"></button>
+              <button class="swatch" type="button" data-color="#16a34a" aria-label="绿色"></button>
+            </div>
+            <input class="color-input" id="color" type="color" value="#ffffff" aria-label="自定义颜色">
+          </div>
+        </div>
+
+        <div class="field-row slider-row">
+          <label for="alpha">不透明度</label>
+          <input class="range" id="alpha" type="range" min="0" max="1" step="0.05" value="0.3">
+          <output class="out" id="outAlpha" for="alpha">0.30</output>
+        </div>
+        <div class="field-row slider-row">
+          <label for="size">字号</label>
+          <input class="range" id="size" type="range" min="0.5" max="3" step="0.05" value="0.8">
+          <output class="out" id="outSize" for="size">0.80</output>
+        </div>
+        <div class="field-row slider-row">
+          <label for="space">间距</label>
+          <input class="range" id="space" type="range" min="1" max="8" step="0.2" value="1.5">
+          <output class="out" id="outSpace" for="space">1.5</output>
+        </div>
+        <div class="field-row slider-row">
+          <label for="rotate">角度</label>
+          <input class="range" id="rotate" type="range" min="-90" max="90" step="3" value="45">
+          <output class="out" id="outRotate" for="rotate">45°</output>
+        </div>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <div class="toolbar">
+        <div class="toolbar-info">
+          <strong id="countText">还没有图片</strong>
+          <span class="toolbar-sub" id="sizeText">上传后可一次批量导出</span>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-primary" id="btnDownloadAll" type="button" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 4v10"></path>
+              <path d="m8 11 4 4 4-4"></path>
+              <path d="M5 19h14"></path>
+            </svg>
+            下载全部
+          </button>
+          <button class="btn" id="btnClearAll" type="button" disabled>清空</button>
+        </div>
+      </div>
+
+      <div class="queue batch" id="batch" hidden>
+        <div class="queue-row">
+          <span class="queue-text" id="batchText">正在导出…</span>
+          <button class="link-btn" id="batchCancel" type="button">取消</button>
+        </div>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
+             id="batchProgress">
+          <i id="batchInner"></i>
+        </div>
+      </div>
+
+      <div class="gallery" id="gallery" aria-live="polite"></div>
+
+      <div class="empty" id="empty">
+        <div class="demo-wrap">
+          <canvas id="demoCanvas" width="1280" height="800" aria-label="水印效果示例"></canvas>
+          <span class="demo-tag">效果示例</span>
+        </div>
+        <p class="empty-text">调整水印参数可在此实时预览；上传图片后，水印会应用到每一张图片上。</p>
+        <button class="btn btn-primary empty-cta" id="emptyUpload" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V4"></path>
+            <path d="m7 9 5-5 5 5"></path>
+            <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path>
+          </svg>
+          选择图片
+        </button>
+      </div>
+
+      <footer class="foot">
+        <span>全部处理在本机浏览器内完成，图片不会离开你的设备。</span>
+        <span class="dot" aria-hidden="true">·</span>
+        <span>导出为 PNG，保持原图分辨率</span>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="lightbox" id="previewDialog" aria-label="图片预览">
+    <div class="lightbox-inner">
+      <button class="lb-btn lb-close" id="previewClose" type="button" aria-label="关闭预览" title="关闭">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round">
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
+      </button>
+      <button class="lb-btn lb-prev" id="previewPrev" type="button" aria-label="上一张" title="上一张">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="m14 6-6 6 6 6"></path>
+        </svg>
+      </button>
+      <img class="lb-img" id="previewImg" alt="水印效果预览">
+      <button class="lb-btn lb-next" id="previewNext" type="button" aria-label="下一张" title="下一张">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="m10 6 6 6-6 6"></path>
+        </svg>
+      </button>
+      <div class="lb-meta">
+        <span class="lb-name" id="previewName"></span>
+        <span class="lb-counter" id="previewCounter"></span>
+      </div>
+      <div class="lb-loading" id="previewLoading" hidden><i></i></div>
+    </div>
+  </dialog>
+
+  <dialog class="confirm" id="confirmDialog" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">确认操作</h2>
+    <p id="confirmText"></p>
+    <div class="confirm-actions">
+      <button class="btn" id="confirmCancel" type="button">取消</button>
+      <button class="btn btn-danger" id="confirmOk" type="button">确定</button>
+    </div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="false"></div>
+</body>
+
+</html>

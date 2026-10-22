@@ -1,0 +1,16 @@
+services:
+  photo-watermark:
+    build:
+      context: .
+    image: photo-watermark:2.0.0
+    container_name: photo-watermark
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /var/log/nginx
+    security_opt:
+      - no-new-privileges:true

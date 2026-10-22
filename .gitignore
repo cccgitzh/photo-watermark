@@ -1,0 +1,16 @@
+# 依赖与构建产物
+node_modules/
+dist/
+_site/
+
+# 本地临时目录
+.tmp/
+*.log
+npm-debug.log*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

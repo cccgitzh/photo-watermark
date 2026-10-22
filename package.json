@@ -1,0 +1,16 @@
+{
+  "name": "photo-watermark",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "纯浏览器本地运行的图片水印工具，图片不上传、不联网",
+  "license": "GPL-3.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/"
+  }
+}

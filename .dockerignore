@@ -1,0 +1,11 @@
+.git
+.github
+.gitignore
+.tmp
+node_modules
+_site
+docs
+tests
+*.md
+LICENSE
+docker-compose.yml
