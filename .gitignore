@@ -14,3 +14,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# EdgeOne 本地链接与临时产物
+.edgeone/
