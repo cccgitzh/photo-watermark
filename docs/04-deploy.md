@@ -138,7 +138,85 @@ curl -o /dev/null -w "%{http_code} js\n"  https://<你的用户名>.github.io/ph
 
 ---
 
-## 7. 备选：Docker 部署
+## 7. EdgeOne Makers 部署
+
+EdgeOne（腾讯云边缘安全加速平台）的 Makers 支持**直传静态目录**，不需要绑定 Git 仓库。本项目已按此方式部署。
+
+### 7.1 命令
+
+```bash
+# 1) 先组装只含运行时文件的目录（避免把 .git / tests / docs 一起上传）
+rm -rf _site && mkdir -p _site
+cp index.html _site/ && cp -r css js assets _site/
+
+# 2) 部署（-n 是项目名，首次会自动创建）
+export PAGES_SOURCE=skills
+edgeone makers deploy _site -n photo-watermark --json
+```
+
+成功时最后一行是单行 JSON：
+
+```json
+{"status":"success","url":"https://photo-watermark.edgeone.cool","type":"preset",
+ "projectId":"makers-xxxx","deploymentId":"dp-xxxx","consoleUrl":"https://console.tencentcloud.com/..."}
+```
+
+常用变体：
+
+```bash
+edgeone makers deploy _site -n photo-watermark -e preview   # 部署到预览环境（每次生成独立子域名）
+edgeone makers deploy _site -n photo-watermark -a overseas  # 部署到海外区域
+```
+
+### 7.2 本次部署记录
+
+| 项 | 值 |
+| --- | --- |
+| 项目名 | `photo-watermark` |
+| 项目 ID | `makers-uieyar1sq6g2` |
+| 默认域名 | `https://photo-watermark.edgeone.cool` |
+| 控制台 | <https://console.tencentcloud.com/edgeone/pages/project/makers-uieyar1sq6g2> |
+| 上传内容 | `_site/`，18 个文件约 119 KB（不含 `.git`、`tests/`、`docs/`） |
+
+### 7.3 默认域名的访问限制（重要）
+
+直接访问 `https://photo-watermark.edgeone.cool` 会返回 **401**，响应头 `X-EOP-MSG: eo_time missing`，页面提示：
+
+> 401 : UNAUTHORIZED — Access Restricted or Authentication Expired.
+> Site Visitor: contact the site administrator to obtain a valid access link.
+> Site Owner: Click "Preview" in the console for a new link.
+
+原因是 EdgeOne Makers 的默认域名（`*.edgeone.cool` / `*.edgeone.dev`）对匿名访客启用了访问校验：必须带上 `?eo_token=<令牌>&eo_time=<时间戳>`，而这对参数由控制台「预览」按钮按域名实时签发（平台接口 `DescribePagesEncipherToken`），CLI 不会长期保存。
+
+三种处理方式，按场景选：
+
+| 场景 | 做法 |
+| --- | --- |
+| 自己验收 / 给同事临时看 | 控制台 → 项目 → 右上角 **预览**，复制带 `eo_token` 的完整链接（**必须整条复制，去掉查询参数就会 401**） |
+| 长期公开访问 | 控制台 → **域名管理** → 绑定**已备案**的自定义域名，绑定成功后访问地址变为 `https://你的域名`，不再需要令牌 |
+| 仅需一个公开演示地址 | 直接用 GitHub Pages（第 5 节），本项目已启用：<https://cccgitzh.github.io/photo-watermark/> |
+
+> 补充：`-a overseas` 部署到海外区域同样受该校验，且「Global（不含中国大陆）」区域的默认域名在中国大陆访问可能被限速或拦截，正式对外服务建议还是走已备案的自定义域名。
+
+### 7.4 更新发布
+
+```bash
+# 改了源码后
+node --test                       # 先跑测试
+git add -A && git commit -m "..." && git push    # 同步到 GitHub（同时触发 Pages 重建）
+
+# 重新组装并发布到 EdgeOne
+rm -rf _site && mkdir -p _site
+cp index.html _site/ && cp -r css js assets _site/
+export PAGES_SOURCE=skills
+edgeone makers deploy _site -n photo-watermark --json
+```
+
+`.edgeone/`（本地项目链接）与 `_site/`（发布产物）都已写入 `.gitignore`，不会进仓库。
+
+---
+
+## 8. 备选：Docker 部署
 
 ```bash
 # 构建 + 启动
@@ -167,7 +245,7 @@ docker compose down --rmi local  # 同时删除本地镜像
 
 ---
 
-## 8. 备选：自建 Nginx / 任意静态服务器
+## 9. 备选：自建 Nginx / 任意静态服务器
 
 ```bash
 # 1) 把运行时文件同步到站点目录
@@ -191,7 +269,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-## 9. 后续更新与回滚
+## 10. 后续更新与回滚
 
 ```bash
 # 改完代码
@@ -209,7 +287,7 @@ git push
 
 ---
 
-## 10. 常见问题
+## 11. 常见问题
 
 | 现象 | 原因 | 解决 |
 | --- | --- | --- |
@@ -225,13 +303,23 @@ git push
 
 ---
 
-## 11. 一页速查
+## 12. 一页速查
 
 ```bash
 node --test                        # 测试
 node scripts/serve.mjs 8080        # 本地预览
 docker compose up -d --build       # 容器部署
 git push                           # 触发 Pages 自动发布
+
+# EdgeOne Makers：组装产物 → 部署
+rm -rf _site && mkdir -p _site && cp index.html _site/ && cp -r css js assets _site/
+PAGES_SOURCE=skills edgeone makers deploy _site -n photo-watermark --json
 ```
 
-线上地址：`https://<你的用户名>.github.io/<仓库名>/`
+| 环境 | 地址 |
+| --- | --- |
+| GitHub 仓库 | <https://github.com/cccgitzh/photo-watermark> |
+| GitHub Pages（公开） | <https://cccgitzh.github.io/photo-watermark/> |
+| EdgeOne 控制台 | <https://console.tencentcloud.com/edgeone/pages/project/makers-uieyar1sq6g2> |
+| EdgeOne 默认域名 | `https://photo-watermark.edgeone.cool`（匿名访问 401，需控制台「预览」拿带令牌链接，或绑定已备案域名） |
+| 本地 | `http://localhost:8080` |

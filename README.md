@@ -4,6 +4,10 @@
 
 ![界面预览](docs/preview.png)
 
+**在线使用**：<https://cccgitzh.github.io/photo-watermark/>
+
+> 同一个版本也部署在 EdgeOne Makers（项目 `photo-watermark`）。EdgeOne 默认域名对匿名访客有访问校验，需在控制台点「预览」获取带令牌的链接，详见 [docs/04-deploy.md](docs/04-deploy.md#7-edgeone-makers-部署)。
+
 ## 特性
 
 - **完全本地**：解码、绘制、打包都用浏览器原生能力；CSP 中 `connect-src 'none'`，从策略层禁止页面联网
